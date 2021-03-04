@@ -1,0 +1,57 @@
+---
+title: "Cereals Consumption by Cereal Type"
+author: "David Jackson"
+date: "3/3/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(scales)
+library(dplyr)
+library(tidyr)
+library(readr)
+library(skimr)
+```
+
+## Cereals Consumption by Cereal Type
+"Breakdown of the average per capita intake of cereals by specific cereal-based commodity types,
+measured in kilocalories per person per day. This figure measures the primary equivalent of all food
+products derived from a given commodity (e.g. "wheat" represents the primary equivalent of its derived
+products). Data refers to cereal food supply at the consumer level but does not account for consumer
+wastage."
+
+* Source: https://ourworldindata.org/grapher/per-capita-consumption-of-cereals-by-commodity-type-daily-kilocalories
+
+```{r}
+cereals <- read.csv("./DATA/per-capita-consumption-of-cereals-by-commodity-type-daily-kilocalories.csv") 
+colnames(cereals) <- c("Country","Code","Year","Wheat","Rice","Barley","Maize","Rye","Oats","Sorghum")
+summary(cereals)
+```
+
+#### Pull Out World Numbers
+
+```{r}
+world_longer <- cereals %>% filter(Country =="World") %>% select(-Code) %>%
+  pivot_longer(cols = Wheat:Sorghum)
+```
+
+#### Plot of Worldwide 
+
+```{r}
+world_yearly <- world_longer %>% group_by(Year) %>%
+  summarise(Total = sum(value),
+            Median = median(value),
+            Mean = mean(value))
+```
+```{r}
+ggplot(world_yearly) + geom_line(aes(x=Year,y=Total)) +
+  labs(title="Cereals: kilocalories per person per day",y="kcal/capita/day") + 
+    scale_y_continuous(labels = comma)
+```
+```{r}
+ggplot(world_yearly) + geom_line(aes(x=Year,y=Mean)) +
+  labs(title="Cereals: Mean kilocalories per person per day",y=" Mean kcal/capita/day") + 
+    scale_y_continuous(labels = comma)
+```
