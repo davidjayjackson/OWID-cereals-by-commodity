@@ -1,7 +1,7 @@
 ---
 title: "Cereals Consumption by Cereal Type"
 author: "David Jackson"
-date: "3/3/2021"
+date: "3/09/2021 9:20 PM/EST"
 output: html_document
 ---
 
@@ -16,11 +16,8 @@ library(skimr)
 ```
 
 ## Cereals Consumption by Cereal Type
-"Breakdown of the average per capita intake of cereals by specific cereal-based commodity types,
-measured in kilocalories per person per day. This figure measures the primary equivalent of all food
-products derived from a given commodity (e.g. "wheat" represents the primary equivalent of its derived
-products). Data refers to cereal food supply at the consumer level but does not account for consumer
-wastage."
+"Breakdown of the average per capita intake of cereals by specific cereal-based commodity types,measured in kilocalories per person per day. This figure measures the primary equivalent of all food products derived from a given commodity (e.g. "wheat" represents the primary equivalent of its derived
+products). Data refers to cereal food supply at the consumer level but does not account for consumer wastage."
 
 * Source: https://ourworldindata.org/grapher/per-capita-consumption-of-cereals-by-commodity-type-daily-kilocalories
 
@@ -46,12 +43,38 @@ world_yearly <- world_longer %>% group_by(Year) %>%
             Mean = mean(value))
 ```
 ```{r}
-ggplot(world_yearly) + geom_line(aes(x=Year,y=Total)) +
-  labs(title="Cereals: kilocalories per person per day",y="kcal/capita/day") + 
+ggplot(world_yearly) + geom_line(aes(x=Year,y=Total),lwd=1.5,col='red') +
+  labs(title="Worldwide Cereals: kilocalories per person per day",y=" (x1000)Calories/capita/day") + 
     scale_y_continuous(labels = comma)
 ```
 ```{r}
-ggplot(world_yearly) + geom_line(aes(x=Year,y=Mean)) +
-  labs(title="Cereals: Mean kilocalories per person per day",y=" Mean kcal/capita/day") + 
+ggplot(world_yearly) + geom_line(aes(x=Year,y=Mean),lwd=1.5,col="darkblue") +
+  labs(title="Worldwide Cereals: Mean kilocalories per person per day",y=" Mean Calories(x1000)/capita/day") + 
     scale_y_continuous(labels = comma)
+```
+
+### KiloCalories by Cereal Type and Year
+
+```{r}
+cereals_longer <- cereals %>% filter(Country !="World") %>% select(-Code) %>%
+  pivot_longer(cols = Wheat:Sorghum) 
+
+```
+```{r}
+ cereals_by_years <- cereals_longer %>% filter(value >0) %>% group_by(name,Year) %>% 
+  summarise(Count = n(),
+            Total = sum(value),
+            Mean = mean(value)) %>% ungroup()
+```
+```{r}
+ggplot(cereals_by_years) + geom_line(aes(x=Year,y=Total,col=name),lwd=1) +
+  scale_y_log10(labels = comma) + 
+  labs(title="Total kilocalories Per Year by Cereal Type")
+```
+
+```{r}
+ggplot(cereals_by_years) + geom_line(aes(x=Year,y=Total),lwd=1) + 
+  facet_wrap(~name,scale = "free_y",ncol=2) +
+  scale_y_log10(labels = comma) + 
+  labs(title="Total kilocalories Consumed Per Year by Cereal Type")
 ```
